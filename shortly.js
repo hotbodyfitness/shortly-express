@@ -3,7 +3,6 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 
-
 var db = require('./app/config');
 var Users = require('./app/collections/users');
 var User = require('./app/models/user');
@@ -24,13 +23,29 @@ app.use(express.static(__dirname + '/public'));
 
 
 app.get('/', 
-function(req, res) {
-  res.render('index');
+function(req, res, next) {
+  res.redirect('/login');
+  
+  next();
+// }, 
+//   function() {
+
+  // console.log('*********************************** \n', res.req.path);
+  // res.render('login', function(err, html) {
+  //   console.log('*********************************** \n', html);
+  //   // console.log('************************************** \n', req.Url);
+  //   //res.redirect('views/login');
+  //   //res.send(html);
+  // });
 });
+
+
 
 app.get('/create', 
 function(req, res) {
-  res.render('index');
+  res.render('index', function(err, html) {
+    res.send(html);
+  });
 });
 
 app.get('/links', 
