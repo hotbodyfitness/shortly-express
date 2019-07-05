@@ -2,6 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var session = require('express-session'); // added this middleware
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -21,77 +22,95 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+// app.use(session({
+//   secret: 'whosdjfnfni'
+//   // , cookie: {maxAge: 36000000}
+// }));
 
-app.get('/', 
-function(req, res, next) {
-  res.redirect('/login');
-  
-  next();
-// }, 
-//   function() {
-
-  // console.log('*********************************** \n', res.req.path);
-  // res.render('login', function(err, html) {
-  //   console.log('*********************************** \n', html);
-  //   // console.log('************************************** \n', req.Url);
-  //   //res.redirect('views/login');
-  //   //res.send(html);
-  // });
-});
-
-
-
-app.get('/create', 
-function(req, res) {
-  res.render('index', function(err, html) {
-    res.send(html);
+app.get('/',
+  function (req, res, next) {
+    //if (req.session.user) {
+      //res.render('index', function (err, html) {
+        //res.send(html);
+      //});
+    //} else {
+      res.redirect('/login');
+    //}
   });
-});
 
-app.get('/links', 
-function(req, res) {
-  Links.reset().fetch().then(function(links) {
-    res.status(200).send(links.models);
+app.get('/create',
+  function (req, res) {
+    //if (req.session.user) {
+      //res.render('index', function (err, html) {
+        //res.send(html);
+      //});
+    //} else {
+      res.redirect('/login');
+    //}
   });
-});
 
-app.post('/links', 
-function(req, res) {
-  var uri = req.body.url;
+app.get('/links',
+  function (req, res) {
+    // var queryStr = 'SELECT username FROM users WHERE username = ?';
+    // var queryArgs = ['Phillip'];
+    // db.query(queryStr, queryArgs, () => {
 
-  if (!util.isValidUrl(uri)) {
-    console.log('Not a valid url: ', uri);
-    return res.sendStatus(404);
-  }
+    // });
+    // console.log('------------------------------------------- \n', express.cookieParser);
+    console.log('******************************************************************************** \n', req);
+    // if (req.session.user) {
+    Links.reset().fetch().then(function (links) {
+      res.status(200).send(links.models);
+    });
+  // } else {
+  //   res.redirect('/login');
+  // }
+  });
 
-  new Link({ url: uri }).fetch().then(function(found) {
-    if (found) {
-      res.status(200).send(found.attributes);
-    } else {
-      util.getUrlTitle(uri, function(err, title) {
-        if (err) {
-          console.log('Error reading URL heading: ', err);
-          return res.sendStatus(404);
-        }
+app.post('/links',
+  function (req, res) {
+    var uri = req.body.url;
 
-        Links.create({
-          url: uri,
-          title: title,
-          baseUrl: req.headers.origin
-        })
-        .then(function(newLink) {
-          res.status(200).send(newLink);
-        });
-      });
+    if (!util.isValidUrl(uri)) {
+      console.log('Not a valid url: ', uri);
+      return res.sendStatus(404);
     }
+
+    new Link({ url: uri }).fetch().then(function (found) {
+      if (found) {
+        res.status(200).send(found.attributes);
+      } else {
+        util.getUrlTitle(uri, function (err, title) {
+          if (err) {
+            console.log('Error reading URL heading: ', err);
+            return res.sendStatus(404);
+          }
+
+          Links.create({
+            url: uri,
+            title: title,
+            baseUrl: req.headers.origin
+          })
+            .then(function (newLink) {
+              res.status(200).send(newLink);
+            });
+        });
+      }
+    });
   });
-});
 
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
 
-
+app.get('/login', (req, res, next) => {
+  // if () {
+  // } else {
+    res.render('login', (err, html) => {
+      res.send(html);
+    });
+  // }
+});
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
@@ -99,8 +118,8 @@ function(req, res) {
 // If the short-code doesn't exist, send the user to '/'
 /************************************************************/
 
-app.get('/*', function(req, res) {
-  new Link({ code: req.params[0] }).fetch().then(function(link) {
+app.get('/*', function (req, res) {
+  new Link({ code: req.params[0] }).fetch().then(function (link) {
     if (!link) {
       res.redirect('/');
     } else {
@@ -108,9 +127,9 @@ app.get('/*', function(req, res) {
         linkId: link.get('id')
       });
 
-      click.save().then(function() {
+      click.save().then(function () {
         link.set('visits', link.get('visits') + 1);
-        link.save().then(function() {
+        link.save().then(function () {
           return res.redirect(link.get('url'));
         });
       });
