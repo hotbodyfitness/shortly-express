@@ -28,13 +28,13 @@ app.use(express.static(__dirname + '/public'));
 // }));
 
 app.get('/',
-  function (req, res, next) {
+  function (req, res) {
     //if (req.session.user) {
-      //res.render('index', function (err, html) {
-        //res.send(html);
-      //});
+      res.render('index', function (err, html) {
+        res.send(html);
+      });
     //} else {
-      res.redirect('/login');
+      // res.redirect('/login');
     //}
   });
 
@@ -134,6 +134,11 @@ app.post('/login', (req, res) => {
   var pass = req.body.password;
   //db.knex.select('username').from('users')(`${user} = username`).then(function(users) {
   db.knex.raw(`SELECT username, password FROM users WHERE username IN ('${user}') AND password IN ('${pass}')`).then(function(users) {
+    if (users.length) {
+      res.redirect('/');
+    } else {
+      alert("Username and/or password doesn't match");
+    }
     console.log('********************************** \n', users);
   });  
 });
