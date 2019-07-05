@@ -38,6 +38,23 @@ app.get('/',
     //}
   });
 
+app.get('/signup', function(req, res) {
+  res.render('signup', (err, results) => {
+    res.send(results);
+  });
+  console.log('signup get request');
+})
+
+app.post('/signup', function(req, res) {
+  new User({
+    'username': req.body.username,
+    'password': req.body.password
+  }).save().then((result) => {
+    res.redirect('/');
+  }); 
+  //console.log('signup post request', req.body.username, req.body.password);
+});
+
 app.get('/create',
   function (req, res) {
     //if (req.session.user) {
@@ -57,7 +74,7 @@ app.get('/links',
 
     // });
     // console.log('------------------------------------------- \n', express.cookieParser);
-    console.log('******************************************************************************** \n', req);
+    //console.log('******************************************************************************** \n', req);
     // if (req.session.user) {
     Links.reset().fetch().then(function (links) {
       res.status(200).send(links.models);
@@ -110,6 +127,15 @@ app.get('/login', (req, res, next) => {
       res.send(html);
     });
   // }
+});
+
+app.post('/login', (req, res) => {
+  var user = req.body.username;
+  var pass = req.body.password;
+  //db.knex.select('username').from('users')(`${user} = username`).then(function(users) {
+  db.knex.raw(`SELECT username, password FROM users WHERE username IN ('${user}') AND password IN ('${pass}')`).then(function(users) {
+    console.log('********************************** \n', users);
+  });  
 });
 
 /************************************************************/
