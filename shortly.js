@@ -12,7 +12,6 @@ var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 
 var app = express();
-// var alertThem = window.alertNotLoggedIn;
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -28,57 +27,54 @@ app.use(express.static(__dirname + '/public'));
 //   // , cookie: {maxAge: 36000000}
 // }));
 
+var username, password;
+
 app.get('/',
   function (req, res) {
-    // if (req.session.user) {
+    if (util.checkUser(username, password)) {
       res.render('index');
-    // }
+    } else {
+      res.redirect('/login');
+    }
   });
 
-app.get('/signup', function(req, res) {
+app.get('/signup', function (req, res) {
   res.render('signup', (err, html) => {
     res.send(html);
   });
   console.log('signup get request');
 })
 
-app.post('/signup', function(req, res) {
+app.post('/signup', function (req, res) {
   new User({
     'username': req.body.username,
     'password': req.body.password
   }).save().then((result) => {
+    username = result.attributes.username;
+    password = result.attributes.password;
     res.redirect('/');
   });
-  //console.log('signup post request', req.body.username, req.body.password);
 });
 
 app.get('/create',
   function (req, res) {
-    //if (req.session.user) {
-      //res.render('index', function (err, html) {
-        //res.send(html);
-      //});
-    //} else {
+    if (util.checkUser(username, password)) {
+      res.render('create');
+    } else {
       res.redirect('/login');
-    //}
+    }
   });
 
 app.get('/links',
   function (req, res) {
-    // var queryStr = 'SELECT username FROM users WHERE username = ?';
-    // var queryArgs = ['Phillip'];
-    // db.query(queryStr, queryArgs, () => {
-
-    // });
-    // console.log('------------------------------------------- \n', express.cookieParser);
-    //console.log('******************************************************************************** \n', req);
-    // if (req.session.user) {
-    Links.reset().fetch().then(function (links) {
-      res.status(200).send(links.models);
-    });
-  // } else {
-  //   res.redirect('/login');
-  // }
+    if (util.checkUser(username, password)) {
+      Links.reset().fetch()
+        .then(function (links) {
+          res.status(200).send(links.models);
+        });
+    } else {
+      res.redirect('/login');
+    }
   });
 
 app.post('/links',
@@ -118,28 +114,28 @@ app.post('/links',
 /************************************************************/
 
 app.get('/login', (req, res, next) => {
-  // if () {
-  // } else {
-    res.render('login', (err, html) => {
-      res.send(html);
-    });
-    console.log('login get request');
-  // }
+  res.render('login', (err, html) => {
+    res.send(html);
+  });
+  console.log('login get request');
 });
 
 app.post('/login', (req, res) => {
   var user = req.body.username;
   var pass = req.body.password;
   //db.knex.select('username').from('users')(`${user} = username`).then(function(users) {
-  db.knex.raw(`SELECT username, password FROM users WHERE username IN ('${user}') AND password IN ('${pass}')`).then(function(users) {
-    if (users.length) {
-      res.redirect('/');
-    } else {
-      console.log("NotLoggedIn");
-      // alertThem();
-    }
-    console.log('********************************** \n', users);
-  });
+  db.knex.raw(`SELECT username, password FROM users WHERE username IN ('${user}') AND password IN ('${pass}')`)
+    .then(function (users) {
+      if (users.length) {
+        username = users[0].username;
+        password = users[0].password;
+        res.redirect('/');
+      } else {
+        console.log("Not Logged In");
+        res.redirect('/login');
+        // alertThem();
+      }
+    });
 });
 
 /************************************************************/
@@ -152,17 +148,24 @@ app.get('/*', function (req, res) {
   new Link({ code: req.params[0] }).fetch().then(function (link) {
     if (!link) {
       res.redirect('/');
-    } else {
-      var click = new Click({
-        linkId: link.get('id')
-      });
 
-      click.save().then(function () {
-        link.set('visits', link.get('visits') + 1);
-        link.save().then(function () {
-          return res.redirect(link.get('url'));
+    } else {
+      if (util.checkUser(username, password)) {
+
+        var click = new Click({
+          linkId: link.get('id')
         });
-      });
+
+        click.save().then(function () {
+          link.set('visits', link.get('visits') + 1);
+          link.save().then(function () {
+            return res.redirect(link.get('url'));
+          });
+        });
+
+      } else {
+        res.redirect('/login');
+      }
     }
   });
 });
