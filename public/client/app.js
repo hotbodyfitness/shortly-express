@@ -1,9 +1,11 @@
+
 window.Shortly = Backbone.View.extend({
   template: Templates['layout'],
-
+  
   events: {
     'click li a.index': 'renderIndexView',
     'click li a.create': 'renderCreateView'
+    //'click li a.logOut': 'logOutSon'
   },
 
   initialize: function() {
@@ -37,4 +39,10 @@ window.Shortly = Backbone.View.extend({
       .filter('.' + routeName)
       .addClass('selected');
   }
+
+  // logOutSon: function() {
+  //   request('http://127.0.0.1:4568/logout', function(error, res, body) {
+
+  //   });
+  // }
 });
