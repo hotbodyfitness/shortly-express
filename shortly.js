@@ -12,6 +12,7 @@ var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 
 var app = express();
+// var alertThem = window.alertNotLoggedIn;
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -29,18 +30,14 @@ app.use(express.static(__dirname + '/public'));
 
 app.get('/',
   function (req, res) {
-    //if (req.session.user) {
-      res.render('index', function (err, html) {
-        res.send(html);
-      });
-    //} else {
-      // res.redirect('/login');
-    //}
+    // if (req.session.user) {
+      res.render('index');
+    // }
   });
 
 app.get('/signup', function(req, res) {
-  res.render('signup', (err, results) => {
-    res.send(results);
+  res.render('signup', (err, html) => {
+    res.send(html);
   });
   console.log('signup get request');
 })
@@ -126,6 +123,7 @@ app.get('/login', (req, res, next) => {
     res.render('login', (err, html) => {
       res.send(html);
     });
+    console.log('login get request');
   // }
 });
 
@@ -137,7 +135,8 @@ app.post('/login', (req, res) => {
     if (users.length) {
       res.redirect('/');
     } else {
-      alert("Username and/or password doesn't match");
+      console.log("NotLoggedIn");
+      // alertThem();
     }
     console.log('********************************** \n', users);
   });
