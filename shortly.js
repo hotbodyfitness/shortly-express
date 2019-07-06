@@ -22,27 +22,29 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
-// app.use(session({
-//   secret: 'whosdjfnfni'
-//   // , cookie: {maxAge: 36000000}
-// }));
+app.use(session({
+  secret: 'very secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    expires:600000
+  }
+}));
 
 var username, password;
 
-app.get('/',
-  function (req, res) {
-    if (util.checkUser(username, password)) {
-      res.render('index');
-    } else {
-      res.redirect('/login');
-    }
+app.get('/', util.checkUser, function (req, res) {
+    // if (util.checkUser(username, password)) {
+    //   res.render('index');
+    // } else {
+    //   res.redirect('/login');
+    // }
+    res.render('index');
   });
 
 app.get('/signup', function (req, res) {
-  res.render('signup', (err, html) => {
-    res.send(html);
-  });
-  console.log('signup get request');
+  res.render('signup');
+  //console.log('signup get request');
 })
 
 app.post('/signup', function (req, res) {
@@ -56,25 +58,17 @@ app.post('/signup', function (req, res) {
   });
 });
 
-app.get('/create',
-  function (req, res) {
-    if (util.checkUser(username, password)) {
-      res.render('create');
-    } else {
-      res.redirect('/login');
-    }
-  });
+// app.get('/create', util.checkUser,
+//   function (req, res) {
+//     res.render('create');
+//   });
 
-app.get('/links',
+app.get('/links', util.checkUser,
   function (req, res) {
-    if (util.checkUser(username, password)) {
       Links.reset().fetch()
         .then(function (links) {
           res.status(200).send(links.models);
         });
-    } else {
-      res.redirect('/login');
-    }
   });
 
 app.post('/links',
@@ -114,9 +108,7 @@ app.post('/links',
 /************************************************************/
 
 app.get('/login', (req, res, next) => {
-  res.render('login', (err, html) => {
-    res.send(html);
-  });
+  res.render('login')
   console.log('login get request');
 });
 
@@ -127,9 +119,16 @@ app.post('/login', (req, res) => {
   db.knex.raw(`SELECT username, password FROM users WHERE username IN ('${user}') AND password IN ('${pass}')`)
     .then(function (users) {
       if (users.length) {
-        username = users[0].username;
-        password = users[0].password;
-        res.redirect('/');
+        // username = users[0].username;
+        // password = users[0].password;
+        // res.redirect('/');
+        req.session.regenerate(function(){
+          req.session.user = user;
+          username = user;
+          console.log('******************* session.user *********************** \n', req.session.user);
+          res.redirect('/');
+          });
+
       } else {
         console.log("Not Logged In");
         res.redirect('/login');
@@ -144,13 +143,13 @@ app.post('/login', (req, res) => {
 // If the short-code doesn't exist, send the user to '/'
 /************************************************************/
 
-app.get('/*', function (req, res) {
+app.get('/*', util.checkUser, function (req, res) {
   new Link({ code: req.params[0] }).fetch().then(function (link) {
     if (!link) {
       res.redirect('/');
 
     } else {
-      if (util.checkUser(username, password)) {
+      // if (util.checkUser(username, password)) {
 
         var click = new Click({
           linkId: link.get('id')
@@ -163,9 +162,9 @@ app.get('/*', function (req, res) {
           });
         });
 
-      } else {
-        res.redirect('/login');
-      }
+      // } else {
+      //   res.redirect('/login');
+      // }
     }
   });
 });
