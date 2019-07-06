@@ -42,12 +42,13 @@ app.get('/', util.checkUser, function (req, res) {
     res.render('index');
   });
 
-// app.get('/logout', function(req, res) {
-//   console.log('************** request session ******************** \n', request.session);
-//   request.session.destroy(function(){
-//     response.redirect('/login');
-//   });
-// })
+app.get('/logout', function(req, res) {
+  // console.log('----------------------------------------------------');
+  //console.log('************** request session ******************** \n', req.session);
+  req.session.destroy(function(){
+    res.redirect('/login');
+  });
+})
 
 app.get('/signup', function (req, res) {
   res.render('signup');
