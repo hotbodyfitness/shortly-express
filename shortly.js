@@ -43,13 +43,14 @@ app.get('/', util.checkUser, function (req, res) {
   });
 
 app.get('/logout', function(req, res) {
-  // console.log('----------------------------------------------------');
+  //console.log('-------------------------------------------------------');
   //console.log('************** request session ******************** \n', req.session);
   req.session.destroy(function(){
+    //console.log('-------------------------------------------------------');
     res.redirect('/login');
   });
 })
-
+//fdggffg`fgfg
 app.get('/signup', function (req, res) {
   res.render('signup');
   //console.log('signup get request');
@@ -117,7 +118,7 @@ app.post('/links',
 
 app.get('/login', (req, res, next) => {
   res.render('login')
-  console.log('login get request');
+  //console.log('login get request');
 });
 
 app.post('/login', (req, res) => {
@@ -133,7 +134,7 @@ app.post('/login', (req, res) => {
         req.session.regenerate(function(){
           req.session.user = user;
           username = user;
-          console.log('******************* session.user *********************** \n', req.session.user);
+          //console.log('******************* session.user *********************** \n', req.session.user);
           res.redirect('/');
           });
 

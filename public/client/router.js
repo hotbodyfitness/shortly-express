@@ -6,8 +6,9 @@ Shortly.Router = Backbone.Router.extend({
   routes: {
     '/': 'index',
     'create': 'create',
-    'login': 'login',
-    'signup': 'signup'
+    // 'login': 'login',
+    // 'signup': 'signup',
+    'logout': 'logout'
   },
 
   swapView: function(view) {
@@ -23,4 +24,19 @@ Shortly.Router = Backbone.Router.extend({
   create: function() {
     this.swapView(new Shortly.createLinkView());
   }
+
+  // logout: function() {
+  //   $.ajax({
+  //     url: '127.0.0.1:4568/create',
+  //     method: 'GET',
+  //     success: function() {
+  //       console.log('logout finally worked')
+  //     },
+  //     error: function(error) {
+  //       console.log(error);
+  //     }
+  //   }) 
+  // }
 });
+
+//ssaas
